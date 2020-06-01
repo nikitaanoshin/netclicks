@@ -1,6 +1,4 @@
 const IMG_URL = 'https://image.tmdb.org/t/p/w185_and_h278_bestv2';
-const SERVER = 'https://api.themoviedb.org/3'
-const API_KEY = 'b1d0d95e0fa4c339e61c6cb2e4a19036';
 
 
 const leftMenu = document.querySelector('.left-menu');
@@ -23,6 +21,11 @@ loading.className = 'loading';
 
 
 class DBService {
+
+	constructor(){
+		this.SERVER = 'https://api.themoviedb.org/3'
+		this.API_KEY = 'b1d0d95e0fa4c339e61c6cb2e4a19036';
+	}
 	getData = async (url) => {
 		const res = await fetch(url);
 		if (res.ok) {
@@ -40,14 +43,20 @@ class DBService {
 		return this.getData('card.json');
 	}
 
-	getSearchResult = query => this.getData(`${SERVER}/search/tv?api_key=${API_KEY}&language=ru-RU&query=${query}`);
+	getSearchResult = query => this.getData(`${this.SERVER}/search/tv?api_key=${this.API_KEY}&language=ru-RU&query=${query}`);
 
-	getTvShow = id => this.getData(`${SERVER}/tv/${id}?api_key=${API_KEY}&language=ru-RU`);
+	getTvShow = id => this.getData(`${this.SERVER}/tv/${id}?api_key=${this.API_KEY}&language=ru-RU`);
 }
 
 const renderCard = response => {
-	console.log(response);
 	tvShowsList.textContent = '';
+
+	if (response.results == 0) {
+		const err = document.querySelector('.tv-shows__head');
+		
+		err.innerHTML = 'Результат не увенчался успехом';
+		loading.remove();
+	};
 
 	response.results.forEach(item => {
 
@@ -105,6 +114,7 @@ document.addEventListener('click', event => {
 });
 
 leftMenu.addEventListener('click', event => {
+	event.preventDefault();
 	const target = event.target; 
 	const dropdown = target.closest('.dropdown');
 	if (dropdown) {
@@ -124,20 +134,26 @@ tvShowsList.addEventListener('click', event => {
 	const card = target.closest('.tv-card');
 
 	if (card) {
-		new DBService().getTvShow(card.id).then(data => {
-			console.log(data);
 
-			tvCardImg.src = IMG_URL + data.poster_path;
-			modalTitle.textContent = data.name;
+		new DBService().getTvShow(card.id).then(({
+			poster_path: posterPath,
+			name: title,
+			genres,
+			vote_average: voteAverage,
+			overview,
+			homepage}) => {
+			tvCardImg.src = IMG_URL + posterPath;
+			tvCardImg.alt = title;
+			modalTitle.textContent = title;
 			genresList.textContent = '';
 
-			data.genres.forEach(item => {
+			genres.forEach(item => {
 				genresList.innerHTML += `<li>${item.name}</li>`;
 			});
 
-			rating.textContent = data.vote_average;
-			description.textContent = data.overview;
-			modalLink.href = data.homepage;
+			rating.textContent = voteAverage;
+			description.textContent = overview;
+			modalLink.href = homepage;
 		})
 		.then(() => {
 			document.body.style.overflow = 'hidden';
@@ -167,7 +183,6 @@ const changeImage = event => {
 		if (img.dataset.backdrop) {
 			[img.src, img.dataset.backdrop] = [img.dataset.backdrop, img.src]
 		}
-		
 	}
 };
 
