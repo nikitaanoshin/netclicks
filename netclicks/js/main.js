@@ -52,6 +52,14 @@ class DBService {
 	getSearchResult = query => this.getData(`${this.SERVER}/search/tv?api_key=${this.API_KEY}&language=ru-RU&query=${query}`);
 
 	getTvShow = id => this.getData(`${this.SERVER}/tv/${id}?api_key=${this.API_KEY}&language=ru-RU`);
+
+	getTopRated = () => this.getData(`${this.SERVER}/tv/top_rated?api_key=${this.API_KEY}&language=ru-RU`);
+
+	getPopular = () => this.getData(`${this.SERVER}/tv/popular?api_key=${this.API_KEY}&language=ru-RU`);
+
+	getToday = () => this.getData(`${this.SERVER}/tv/airing_today?api_key=${this.API_KEY}&language=ru-RU`);
+
+	getWeek = () => this.getData(`${this.SERVER}/tv/on_the_air?api_key=${this.API_KEY}&language=ru-RU`);
 }
 
 const renderCard = response => {
@@ -137,6 +145,22 @@ leftMenu.addEventListener('click', event => {
 		leftMenu.classList.add('openMenu');
 		hamburger.classList.add('open');
 	}
+
+	if (target.closest('#top-rated')) {
+		new DBService().getTopRated().then(renderCard);
+	}
+
+	if (target.closest('#popular')) {
+		new DBService().getPopular().then(renderCard);
+	}
+
+	if (target.closest('#today')) {
+		new DBService().getToday().then(renderCard);
+	}
+
+	if (target.closest('#week')) {
+		new DBService().getWeek().then(renderCard);
+	}
 });
 
 // Открытие модального окна
@@ -163,8 +187,10 @@ tvShowsList.addEventListener('click', event => {
 					tvCardImg.src = IMG_URL + posterPath;
 					tvCardImg.alt = title;
 					posterWrapper.style.display = '';
+					modalContent.style.paddingLeft = '';
 				} else {
 					posterWrapper.style.display = 'none';
+					modalContent.style.paddingLeft = '25px';
 				}
 
 			modalTitle.textContent = title;
@@ -182,7 +208,7 @@ tvShowsList.addEventListener('click', event => {
 			document.body.style.overflow = 'hidden';
 			modal.classList.remove('hide');
 		})
-		.then(() => {
+		.finally(() => {
 			preloader.style.display = 'none';
 		})
 	}
@@ -214,4 +240,3 @@ const changeImage = event => {
 
 tvShowsList.addEventListener('mouseover', changeImage);
 tvShowsList.addEventListener('mouseout', changeImage);
-
