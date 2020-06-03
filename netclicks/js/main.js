@@ -1,19 +1,25 @@
 const IMG_URL = 'https://image.tmdb.org/t/p/w185_and_h278_bestv2';
 
 
-const leftMenu = document.querySelector('.left-menu');
-const hamburger = document.querySelector('.hamburger');
-const tvShowsList = document.querySelector('.tv-shows__list');
-const modal = document.querySelector('.modal');
-const tvShows = document.querySelector('.tv-shows');
-const tvCardImg = document.querySelector('.tv-card__img');
-const modalTitle = document.querySelector('.modal__title');
-const genresList = document.querySelector('.genres-list');
-const rating = document.querySelector('.rating');
-const description = document.querySelector('.description');
-const modalLink = document.querySelector('.modal__link');
-const searchForm = document.querySelector('.search__form');
-const searchFormInput = document.querySelector('.search__form-input');
+const leftMenu = document.querySelector('.left-menu'),
+		hamburger = document.querySelector('.hamburger'),
+		tvShowsList = document.querySelector('.tv-shows__list'),
+		modal = document.querySelector('.modal'),
+		tvShows = document.querySelector('.tv-shows'),
+		tvCardImg = document.querySelector('.tv-card__img'),
+		modalTitle = document.querySelector('.modal__title'),
+		genresList = document.querySelector('.genres-list'),
+		rating = document.querySelector('.rating'),
+		description = document.querySelector('.description'),
+		modalLink = document.querySelector('.modal__link'),
+		searchForm = document.querySelector('.search__form'),
+		searchFormInput = document.querySelector('.search__form-input'),
+		preloader = document.querySelector('.preloader'),
+		dropdown = document.querySelectorAll('.dropdown'),
+		tvShowsHead = document.querySelector('.tv-shows__head'),
+		posterWrapper = document.querySelector('.poster__wrapper'),
+		modalContent = document.querySelector('.modal__content');
+
 
 
 const loading = document.createElement('div');
@@ -51,15 +57,16 @@ class DBService {
 const renderCard = response => {
 	tvShowsList.textContent = '';
 
-	if (response.results == 0) {
-		const err = document.querySelector('.tv-shows__head');
-		
-		err.innerHTML = 'Результат не увенчался успехом';
+	if (!response.total_results) {
 		loading.remove();
-	};
+		tvShowsHead.textContent = 'К сожалению по вашему запросу ничего не найдено...';
+		tvShowsHead.style.color = 'red';
+		return;
+	}
+	tvShowsHead.textContent = 'Результат поиска';
+	tvShowsHead.style.color = '';
 
 	response.results.forEach(item => {
-
 		const {
 			backdrop_path: backdrop,
 			name: title,
@@ -99,16 +106,24 @@ searchForm.addEventListener('submit', event => {
 	searchFormInput.value = '';
 });
 
+const closeDropdown = () => {
+	dropdown.forEach(item => {
+		item.classList.remove('active');
+	})
+}
 
 hamburger.addEventListener('click', () => {
 	leftMenu.classList.toggle('openMenu');
 	hamburger.classList.toggle('open');
+	closeDropdown();
 });
 
 document.addEventListener('click', event => {
-	if(!event.target.closest('.left-menu')){
+	const target = event.target;
+	if(!target.closest('.left-menu')){
 		leftMenu.classList.remove('openMenu');
 		hamburger.classList.remove('open');
+		closeDropdown();
 	}
 	
 });
@@ -135,6 +150,8 @@ tvShowsList.addEventListener('click', event => {
 
 	if (card) {
 
+		preloader.style.display = 'block';
+
 		new DBService().getTvShow(card.id).then(({
 			poster_path: posterPath,
 			name: title,
@@ -142,8 +159,14 @@ tvShowsList.addEventListener('click', event => {
 			vote_average: voteAverage,
 			overview,
 			homepage}) => {
-			tvCardImg.src = IMG_URL + posterPath;
-			tvCardImg.alt = title;
+				if (posterPath) {
+					tvCardImg.src = IMG_URL + posterPath;
+					tvCardImg.alt = title;
+					posterWrapper.style.display = '';
+				} else {
+					posterWrapper.style.display = 'none';
+				}
+
 			modalTitle.textContent = title;
 			genresList.textContent = '';
 
@@ -158,6 +181,9 @@ tvShowsList.addEventListener('click', event => {
 		.then(() => {
 			document.body.style.overflow = 'hidden';
 			modal.classList.remove('hide');
+		})
+		.then(() => {
+			preloader.style.display = 'none';
 		})
 	}
 });
