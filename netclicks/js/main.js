@@ -19,7 +19,9 @@ const leftMenu = document.querySelector('.left-menu'),
 		tvShowsHead = document.querySelector('.tv-shows__head'),
 		posterWrapper = document.querySelector('.poster__wrapper'),
 		modalContent = document.querySelector('.modal__content'),
-		pagination = document.querySelector('.pagination');
+		pagination = document.querySelector('.pagination'),
+		trailer = document.getElementById('trailer'),
+		headTrailer = document.getElementById('headTrailer');
 
 
 
@@ -68,6 +70,10 @@ class DBService {
 	getToday = () => this.getData(`${this.SERVER}/tv/airing_today?api_key=${this.API_KEY}&language=ru-RU`);
 
 	getWeek = () => this.getData(`${this.SERVER}/tv/on_the_air?api_key=${this.API_KEY}&language=ru-RU`);
+
+	getTrailer = id => {
+		return this.getData(`${this.SERVER}/tv/${id}/videos?api_key=${this.API_KEY}&language=ru-RU`);
+	}
 }
 
 const dbService = new DBService();
@@ -193,6 +199,7 @@ leftMenu.addEventListener('click', event => {
 		tvShowsList.textContent = '';
 		tvShowsHead.textContent = '';
 		pagination.remove();
+		
 	}
 });
 
@@ -236,6 +243,32 @@ tvShowsList.addEventListener('click', event => {
 			rating.textContent = voteAverage;
 			description.textContent = overview;
 			modalLink.href = homepage;
+			return card.id
+		})
+		.then(dbService.getTrailer)
+		.then(card => {
+			headTrailer.classList.add('hide');
+			trailer.textContent = '';
+			if (card.results.length) {
+				card.results.forEach(item => {
+					headTrailer.classList.remove('hide');
+					headTrailer.style.margin = '10px 0px';
+					const trailerItem = document.createElement('li');
+
+					trailerItem.innerHTML = `
+					<iframe
+						width="400"
+						height="300"
+						src="https://www.youtube.com/embed/${item.key}"
+						frameborder="0"
+						allowfullscreen>
+					</iframe>
+					<h4>${item.name}</h4>
+				`;
+
+					trailer.append(trailerItem);
+				})
+			}
 		})
 		.then(() => {
 			document.body.style.overflow = 'hidden';
