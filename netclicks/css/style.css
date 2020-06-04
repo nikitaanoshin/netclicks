@@ -11,7 +11,7 @@ html {
 }
 
 body {
-  margin: 0;
+  margin: 0px 0px 30px 0px;
   background-color: white;
   font-family: Museo Sans, Arial, sans-serif;
   font-weight: 500;
@@ -1071,4 +1071,25 @@ div:after {
     transform: translate(0, 0) scale(1) rotate(360deg);
     background-color: #00838f;
   }
+}
+
+.pagination {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+
+.pagination a {
+  padding: 5px 5px;
+  margin: 5px 5px;
+}
+
+.pagination a:hover {
+  background-color: #00abd1;
+  border-radius: 7px;
+  -webkit-transition: .5s;
+  transition: .5s;
 }
